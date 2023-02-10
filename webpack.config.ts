@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as Webpack from "webpack";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
-import * as MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import * as MiniCssExtractPlugin from "mini-css-extract-plugin";
 import TsconfigPathsPlugin from "tsconfig-paths-webpack-plugin";
 import VueLoaderPlugin from "vue-loader/dist/pluginWebpack5";
 
@@ -48,6 +48,26 @@ export default {
           },
         ],
       },
+      // webpack5 内置了 asset 模块, 用来代替 file-loader & url-loader & raw-loader 处理静态资源
+      {
+        test: /\.png|jpg|gif|jpeg|svg/,
+        type: "asset",
+        parser: {
+          dataUrlCondition: {
+            maxSize: 10 * 1024,
+          },
+        },
+        generator: {
+          filename: "images/[base]",
+        },
+      },
+      {
+        test: /\.txt|xlsx/,
+        type: "asset",
+        generator: {
+          filename: "files/[base]",
+        },
+      },
     ],
   },
   resolve: {
@@ -57,23 +77,22 @@ export default {
     plugins: [new TsconfigPathsPlugin()],
   },
   plugins: [
-    new Webpack.HotModuleReplacementPlugin(),
+    // webpack 5 热模块自动导入
+    // new Webpack.HotModuleReplacementPlugin(),
     new VueLoaderPlugin(),
     // 全局注入 Vue, 避免在每个 .vue 文件中重复引入
     new Webpack.ProvidePlugin({
-      Vue: ['vue/dist/vue.esm.js', 'default'],
+      Vue: ["vue/dist/vue.esm.js", "default"],
     }),
     new HtmlWebpackPlugin({
       template: "src/index.html", // 自定义 HTML 模板
     }),
   ],
   devServer: {
-    contentBase: path.resolve(__dirname, "dist"),
-    open: true,
-    port: 8888,
+    static: {
+      directory: path.join(__dirname, "dist"),
+    },
     compress: true,
-    hot: true,
-    clientLogLevel: "silent",
-    noInfo: true,
+    port: 9000,
   },
 } as Webpack.Configuration;
